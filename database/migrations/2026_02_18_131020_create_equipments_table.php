@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('equipments', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('usage');
+            $table->string('usage', 1000);
             $table->string('model_number');
-            $table->decimal('value', 10, 2);
-            $table->boolean('status')->default(true);
+            $table->double('value');
+            $table->string('status');
             $table->timestamps();
         });
     }

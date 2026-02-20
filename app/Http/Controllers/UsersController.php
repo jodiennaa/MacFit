@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Users;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UsersController extends Controller
@@ -11,19 +11,16 @@ class UsersController extends Controller
         $validated = $request->validate([
             'name' =>'required|string',
             'email' =>'required|string',
-            'password' =>'required|string',
-            'role_id' =>'required|integer|exists:roles,id',
-             ]);
+            'password' =>'required|string', ]);
 
-             $users = new Users();
-             $users->name = $validated['name'];
-             $users->email = $validated['email'];
-             $users->password = bcrypt($validated['password']);
-             $users->role_id = $validated['role_id'];
+             $user = new User();
+             $user->name = $validated['name'];
+             $user->email = $validated['email'];
+             $user->password = bcrypt($validated['password']);
              
              try{
-                $users->save();
-                return response()->json($users);
+                $user->save();
+                return response()->json($user);
              }
              catch(\Exception $exception){
                 return response()->json([
@@ -36,8 +33,8 @@ class UsersController extends Controller
  }
  public function readAllUsers(){
     try{
-        $userss = Users::all();
-        return response()->json($userss);
+        $users = User::all();
+        return response()->json($users);
      }
      catch(\Exception $exception){
         return response()->json([
@@ -48,8 +45,8 @@ class UsersController extends Controller
  }
  public function readUsers($id){
     try{
-        $users = Users::findorFail($id);
-        return response()->json($users);
+        $user = User::findOrFail($id);
+        return response()->json($user);
 
     }
     catch(\Exception $exception){
@@ -64,17 +61,15 @@ class UsersController extends Controller
             'name' =>'required|string',
             'email' =>'required|string',
             'password' =>'required|string',
-            'role_id' =>'required|integer|exists:roles,id',
-             ]);
+            ]);
 
     try{
-        $users = Users::findorFail($id);
-        $users->name = $validated['name'];
-             $users->email = $validated['email'];
-             $users->password = bcrypt($validated['password']);
-             $users->role_id = $validated['role_id'];
-             $users->save();
-        return response()->json($users);
+        $user = User::findOrFail($id);
+        $user->name = $validated['name'];
+             $user->email = $validated['email'];
+             $user->password = bcrypt($validated['password']);
+             $user->save();
+        return response()->json($user);
          }
          catch(\Exception $exception){
                 return response()->json([
@@ -85,8 +80,8 @@ class UsersController extends Controller
 }
 public function deleteUsers($id){
     try{
-        $users = Users::findorFail($id);
-        $users->delete();
+        $user = User::findOrFail($id);
+        $user->delete();
         return response("Users deleted successfully!");
     }
     catch(\Exception $exception){
