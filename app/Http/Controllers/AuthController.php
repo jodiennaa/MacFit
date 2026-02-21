@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -14,14 +15,28 @@ class AuthController extends Controller
             'name'=>'required|string|max:40',
             'email'=>'required|email|unique:users,email',
             'password'=>'required|string|min:4|max:15|confirmed',
+            'user_image'=>'nullable|image|mimes:jpeg,png,jpg',
 
         ]);
+
+        $role = Role::where('name', 'User')->first();
+
 
         $user = new User();
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-        
+        $user->role_id = $role->id;
         $user->password = Hash::make($validated['password']);
+
+        if($request->hasFile('user_image')){
+            $filename = $request->file('user_image')->store('users', 'public');
+            
+        } else{
+            $filename = null;
+        }
+        $user->user_image = $filename;
+
+
 
         try{
             $user->save();
@@ -33,8 +48,6 @@ class AuthController extends Controller
                 'message'=>$exception->getMessage()
             ]);
         }
-
-
     }
 
     public function login (Request $request){
@@ -48,14 +61,24 @@ class AuthController extends Controller
         if(!$user || !Hash::check($validated['password'], $user->password))
             throw ValidationException::withMessages([
                 'Error'=>'Invalid Credentials'],401);
+
                  $token = $user->createToken("auth-token")->plainTextToken;
             return response()->json([
                 'message'=>'Login Successful!',
                 'token'=>$token,
-                'user'=>$user
+                'user'=>$user,
+
 
             ]);
             
+            }
+
+            public function logout(Request $request){
+                $request->user()->currentAccessToken()->delete();
+                return response()->json([
+                    'message'=>'Logout Successful!'
+                ]);
+
             }
 
             

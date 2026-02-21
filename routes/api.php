@@ -16,8 +16,12 @@ use App\Http\Controllers\UsersController;
 Route::post('register',[AuthController::class, 'register']);
 Route::post('login',[AuthController::class, 'login']);
 
-    //Protected Routes
-Route::middleware('auth:sanctum')->group(function () {
+//     //Protected Routes
+// Route::middleware('auth:sanctum')->group(function () {
+
+Route::post('logout',[AuthController::class, 'logout']);
+
+
     
 
 
@@ -63,4 +67,3 @@ Route::get('/getEquipment/{id}',[EquipmentsController::class, 'readEquipments'])
 Route::post('/updateEquipment/{id}',[EquipmentsController::class, 'updateEquipments']);
 Route::post('/deleteEquipment/{id}',[EquipmentsController::class, 'deleteEquipments']);
 
-});
