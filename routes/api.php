@@ -9,15 +9,26 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EquipmentsController;
 use App\Http\Controllers\GymController;
+use App\Http\Controllers\ResendEmailVerificationController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\VerifyEmailController;
 
     //Public Routes
 Route::post('register',[AuthController::class, 'register']);
 Route::post('login',[AuthController::class, 'login']);
 
-//     //Protected Routes
-// Route::middleware('auth:sanctum')->group(function () {
+//Email Verification
+Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])
+->name('verification.verify')
+->middleware(['signed', 'throttle:6,1']);
+
+Route::post('/email/resend', [ResendEmailVerificationController::class, 'resend'])
+->middleware('throttle:6,1');
+
+
+    //Protected Routes
+Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('logout',[AuthController::class, 'logout']);
 
@@ -67,3 +78,5 @@ Route::get('/getEquipment/{id}',[EquipmentsController::class, 'readEquipments'])
 Route::post('/updateEquipment/{id}',[EquipmentsController::class, 'updateEquipments']);
 Route::post('/deleteEquipment/{id}',[EquipmentsController::class, 'deleteEquipments']);
 
+
+});

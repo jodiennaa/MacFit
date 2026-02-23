@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -19,13 +21,18 @@ class AuthController extends Controller
 
         ]);
 
-        $role = Role::where('name', 'User')->first();
-
+         if($request->role_id){
+            $role_id = $request->role_id;
+            
+        } else{
+            $role_id = Role::where('name', 'user')->first();
+           
+        }
 
         $user = new User();
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-        $user->role_id = $role->id;
+        $user->role_id = $role_id;
         $user->password = Hash::make($validated['password']);
 
         if($request->hasFile('user_image')){
@@ -40,7 +47,22 @@ class AuthController extends Controller
 
         try{
             $user->save();
-            return response()->json($user);
+
+             $signedURL = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            [
+                'id' => $user->id,
+             'hash' => sha1($user->email)
+             ]
+        );
+        $user->notify(new VerifyEmailNotification($signedURL));
+
+        return response()->json([
+            'message'=>'Verification Email sent successfully.',
+            'user'=>$user,
+        ],200);
+
         }
         catch(\Exception $exception){
             return response()->json([
@@ -62,11 +84,18 @@ class AuthController extends Controller
             throw ValidationException::withMessages([
                 'Error'=>'Invalid Credentials'],401);
 
+                if(!$user->is_active){
+                    return response()->json([
+                        'message'=>'Your Account is not active. Please verify your email address.',
+                    ],403);
+                }
+
                  $token = $user->createToken("auth-token")->plainTextToken;
             return response()->json([
                 'message'=>'Login Successful!',
                 'token'=>$token,
                 'user'=>$user,
+                'abilities'=>$user->abilities(),
 
 
             ]);
