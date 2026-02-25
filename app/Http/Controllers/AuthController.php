@@ -18,6 +18,8 @@ class AuthController extends Controller
             'email'=>'required|email|unique:users,email',
             'password'=>'required|string|min:4|max:15|confirmed',
             'user_image'=>'nullable|image|mimes:jpeg,png,jpg',
+            'is_active'=>'nullable|boolean',
+            'role_id'=>'required|integer|exists:roles,id'
 
         ]);
 
@@ -34,6 +36,8 @@ class AuthController extends Controller
         $user->email = $validated['email'];
         $user->role_id = $role_id;
         $user->password = Hash::make($validated['password']);
+         $user->role_id = $validated['role_id'];
+         
 
         if($request->hasFile('user_image')){
             $filename = $request->file('user_image')->store('users', 'public');

@@ -10,10 +10,10 @@ class BundlesController extends Controller
 {
     public function createBundles(Request $request){
         $validated = $request->validate([
-            'name' =>'required|string',
+            'name' =>'required|string|unique:bundles,name',
             'start_time' =>'required',
             'duration' =>'required',
-            'description' =>'string|max:1000',
+            'description' =>'required|string|max:1000',
             'category_id' =>'integer|required|exists:categories,id',
             
              ]);
