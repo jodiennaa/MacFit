@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OtpMail;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserOtp;
 use App\Notifications\VerifyEmailNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -37,7 +41,7 @@ class AuthController extends Controller
         $user->role_id = $role_id;
         $user->password = Hash::make($validated['password']);
          $user->role_id = $validated['role_id'];
-         
+
 
         if($request->hasFile('user_image')){
             $filename = $request->file('user_image')->store('users', 'public');
@@ -94,15 +98,21 @@ class AuthController extends Controller
                     ],403);
                 }
 
-                 $token = $user->createToken("auth-token")->plainTextToken;
+                $otp = rand(100000, 999999);
+                $expiresAt = now()->addMinutes(5);
+
+                UserOtp::updateorcreate([
+                   'user_id' =>$user->id,
+                   'otp' =>$otp,
+                   'expires_at' =>$expiresAt
+                ]);
+
+                Mail::to($user->email)->send(new OtpMail($otp));
+
+                 
             return response()->json([
-                'message'=>'Login Successful!',
-                'token'=>$token,
-                'user'=>$user,
-                'abilities'=>$user->abilities(),
-
-
-            ]);
+                'message'=>'OTP Sent to your email. PLease verify to complete login.',
+                 ],201);
             
             }
 
@@ -114,9 +124,12 @@ class AuthController extends Controller
 
             }
 
+            public function userInfo(){
+                 return response()->json(Auth::user());
+
             
         }
 
-
+}
     
 

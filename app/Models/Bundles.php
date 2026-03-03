@@ -10,6 +10,7 @@ class Bundles extends Model
         'name',
         'start_time',
         'duration',
+        'value',
         'category_id',
         'description',
     ];

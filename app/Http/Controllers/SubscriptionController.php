@@ -9,12 +9,14 @@ class SubscriptionController extends Controller
 {
      public function createSubscription(Request $request){
         $validated = $request->validate([
-            'user_id' =>'integer|required|exists:users,id',
             'bundle_id' =>'integer|required|exists:bundles,id',
              ]);
 
+             $userId = auth()->user->id;
+
+             
              $subscription = new Subscription();
-             $subscription->user_id = $validated['user_id'];
+             $subscription->user_id = $userId;
              $subscription->bundle_id = $validated['bundle_id'];
 
              try{
@@ -33,6 +35,10 @@ class SubscriptionController extends Controller
  public function readAllSubscriptions(){
     try{
         $subscriptions = Subscription::all();
+        $subscriptions = Subscription::join('users','subscriptions.user_id','=','users.id')
+                                        ->join('bundles','subscriptions.bundle_id','=','bundles.id')
+                                        ->select('subscriptions.*', 'bundles.value as bundle_value', 'users.name as user_name', 'bundles.name as bundle_name')
+                                        ->get();
         return response()->json($subscriptions);
      }
      catch(\Exception $exception){
@@ -87,4 +93,20 @@ public function deleteSubscription($id){
         ], 500);
     }
 }
+
+ public function getUserCharges(){
+        
+       $user = auth()->user;
+        $userId = $user->id;
+
+
+        $userCharge = Subscription::where('user_id', $userId)
+                        ->join('users', 'subscriptions.user_id', '=', 'users.id')
+                        ->join('bundles', 'subscriptions.bundle_id', '=', 'bundles.id')
+                        ->sum('bundles.value');
+        return response()->json([
+            'user'=>$user->name,
+            'total_charge'=>$userCharge,
+        ], 200);
+    }
 }

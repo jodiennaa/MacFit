@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Bundles;
-use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class BundlesController extends Controller
 {
@@ -14,6 +13,7 @@ class BundlesController extends Controller
             'start_time' =>'required',
             'duration' =>'required',
             'description' =>'required|string|max:1000',
+            'value' =>'required|number',
             'category_id' =>'integer|required|exists:categories,id',
             
              ]);
@@ -22,18 +22,21 @@ class BundlesController extends Controller
              $bundle->name = $validated['name'];
              $bundle->start_time = $validated['start_time'];
              $bundle->duration = $validated['duration'];
+             $bundle->value = $validated['value'];
              $bundle->description = $validated['description'];
              $bundle->category_id = $validated['category_id'];
 
              try{
                 $bundle->save();
-                return response()->json($bundle);
+                return response()->json([
+                    'message'=>'Bundle Saved Successfully'
+                ],200);
              }
              catch(\Exception $exception){
                 return response()->json([
                 'error' => 'Failed to Save Bundles',
                 'message'=>$exception->getMessage()
-                ], 500);
+                ], 200);
 
              }
 
@@ -77,6 +80,7 @@ class BundlesController extends Controller
             'name' =>'required|string',
             'start_time' =>'required',
             'duration' =>'required',
+            'value'=>'required|number',
             'description' =>'string|max:1000',
             'category_id' =>'integer|required|exists:categories,id',
      ]);
@@ -85,6 +89,7 @@ class BundlesController extends Controller
              $bundle->name = $validated['name'];
              $bundle->start_time = $validated['start_time'];
              $bundle->duration = $validated['duration'];
+             $bundle->value = $validated['value'];
              $bundle->description = $validated['description'];
              $bundle->category_id = $validated['category_id'];
 $bundle->save();

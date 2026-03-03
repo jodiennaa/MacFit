@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->dateTime('start_time');
             $table->time('duration');
+             $table->double('value');
+
             $table->string('description',1000);
             $table->unsignedBigInteger('category_id');
 

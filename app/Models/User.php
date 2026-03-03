@@ -64,4 +64,6 @@ class User extends Authenticatable
             'trainer' =>$this->role->id === 4,
         ];
     }
+
+   
 }

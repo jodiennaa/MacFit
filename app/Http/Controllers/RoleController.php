@@ -7,6 +7,11 @@ use App\Models\Role;
 
 class RoleController extends Controller
 {
+
+
+public function _construct(){
+    $this->authorizeResource(Role::class, 'role') ;
+}
     public function createRole(Request $request){
         $validated = $request->validate([
             'name' =>'required|string|unique:roles,name',
@@ -31,6 +36,7 @@ class RoleController extends Controller
 
  }
  public function readAllRoles(){
+    $this->authorize('viewAny', Role::class);
     try{
         $roles = Role::all();
         return response()->json($roles);
