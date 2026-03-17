@@ -20,10 +20,14 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name'=>'required|string|max:40',
             'email'=>'required|email|unique:users,email',
-            'password'=>'required|string|min:4|max:15|confirmed',
+            'password'=>'required|string|min:4|max:15',
             'user_image'=>'nullable|image|mimes:jpeg,png,jpg',
             'is_active'=>'nullable|boolean',
-            'role_id'=>'required|integer|exists:roles,id'
+            'role_id'=>'required|integer|exists:roles,id',
+            'phoneNumber'=>'nullable|string',
+            'gender'=>'nullable|string',
+            'dob'=>'nullable|string',
+            'gymLocation'=>'nullable|string',
 
         ]);
 
@@ -40,7 +44,12 @@ class AuthController extends Controller
         $user->email = $validated['email'];
         $user->role_id = $role_id;
         $user->password = Hash::make($validated['password']);
-         $user->role_id = $validated['role_id'];
+        $user->role_id = $validated['role_id'];
+        $user->is_active = true; 
+        $user->phoneNumber = $validated['phoneNumber'];
+        $user->gender = $validated['gender'];
+        $user->dob = $validated['dob'];
+        $user->gymLocation = $validated['gymLocation'];
 
 
         if($request->hasFile('user_image')){
@@ -56,20 +65,27 @@ class AuthController extends Controller
         try{
             $user->save();
 
-             $signedURL = URL::temporarySignedRoute(
-            'verification.verify',
-            now()->addMinutes(60),
-            [
-                'id' => $user->id,
-             'hash' => sha1($user->email)
-             ]
-        );
-        $user->notify(new VerifyEmailNotification($signedURL));
+        //      $signedURL = URL::temporarySignedRoute(
+        //     'verification.verify',
+        //     now()->addMinutes(60),
+        //     [
+        //         'id' => $user->id,
+        //      'hash' => sha1($user->email)
+        //      ]
+        // );
+        // $user->notify(new VerifyEmailNotification($signedURL));
 
-        return response()->json([
-            'message'=>'Verification Email sent successfully.',
-            'user'=>$user,
-        ],200);
+        // return response()->json([
+        //     'message'=>'Verification Email sent successfully.',
+        //     'user'=>$user,
+        // ],200);
+
+         $token = $user->createToken('auth-token')->plainTextToken;
+            return response()->json([
+                'message' => 'Registration Successful!',
+                'user' => $user,
+                'token' => $token,
+            ], 201);
 
         }
         catch(\Exception $exception){
@@ -98,21 +114,28 @@ class AuthController extends Controller
                     ],403);
                 }
 
-                $otp = rand(100000, 999999);
-                $expiresAt = now()->addMinutes(5);
+            //     $otp = rand(100000, 999999);
+            //     $expiresAt = now()->addMinutes(5);
 
-                UserOtp::updateorcreate([
-                   'user_id' =>$user->id,
-                   'otp' =>$otp,
-                   'expires_at' =>$expiresAt
-                ]);
+            //     UserOtp::updateorcreate([
+            //        'user_id' =>$user->id,
+            //        'otp' =>$otp,
+            //        'expires_at' =>$expiresAt
+            //     ]);
 
-                Mail::to($user->email)->send(new OtpMail($otp));
+            //     Mail::to($user->email)->send(new OtpMail($otp));
 
                  
+            // return response()->json([
+            //     'message'=>'OTP Sent to your email. PLease verify to complete login.',
+            //      ],201);
+
+            $token = $user->createToken('auth-token')->plainTextToken;
             return response()->json([
-                'message'=>'OTP Sent to your email. PLease verify to complete login.',
-                 ],201);
+                'message' => 'Registration Successful!',
+                'user' => $user,
+                'token' => $token,
+            ], 201);
             
             }
 
